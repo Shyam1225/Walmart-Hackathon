@@ -3,6 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { RouteTracker } from "./RouteTracker";
+import { ContactDriver } from "./ContactDriver";
+import { RouteOptimizer } from "./RouteOptimizer";
 import { 
   Truck,
   MapPin,
@@ -101,6 +105,31 @@ export const DeliveryOptimization = () => {
     costSavings: 78500,
     onTimeDeliveries: 94.2
   });
+
+  // Modal states
+  const [activeModal, setActiveModal] = useState<{
+    type: 'track' | 'optimize' | 'contact' | null;
+    route: DeliveryRoute | null;
+  }>({ type: null, route: null });
+
+  const openModal = (type: 'track' | 'optimize' | 'contact', route: DeliveryRoute) => {
+    setActiveModal({ type, route });
+  };
+
+  const closeModal = () => {
+    setActiveModal({ type: null, route: null });
+  };
+
+  const handleRouteOptimized = (optimizedData: any) => {
+    // Update the route with optimized data
+    if (activeModal.route) {
+      setRoutes(prev => prev.map(route => 
+        route.id === activeModal.route!.id 
+          ? { ...route, status: "optimizing" as const, estimatedTime: optimizedData.newEstimatedTime }
+          : route
+      ));
+    }
+  };
 
   // Simulate real-time updates
   useEffect(() => {
@@ -322,13 +351,28 @@ export const DeliveryOptimization = () => {
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-2 border-t border-border">
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => openModal('track', route)}
+                  >
                     Track Route
                   </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => openModal('optimize', route)}
+                  >
                     Optimize
                   </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => openModal('contact', route)}
+                  >
                     Contact Driver
                   </Button>
                 </div>
@@ -371,6 +415,31 @@ export const DeliveryOptimization = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal Dialogs */}
+      <Dialog open={activeModal.type !== null} onOpenChange={closeModal}>
+        <DialogContent className="max-w-none p-0 bg-transparent border-none">
+          {activeModal.type === 'track' && activeModal.route && (
+            <RouteTracker 
+              route={activeModal.route} 
+              onClose={closeModal} 
+            />
+          )}
+          {activeModal.type === 'optimize' && activeModal.route && (
+            <RouteOptimizer 
+              route={activeModal.route} 
+              onClose={closeModal}
+              onOptimized={handleRouteOptimized}
+            />
+          )}
+          {activeModal.type === 'contact' && activeModal.route && (
+            <ContactDriver 
+              route={activeModal.route} 
+              onClose={closeModal} 
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
