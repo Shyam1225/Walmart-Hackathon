@@ -58,6 +58,16 @@ export const RouteOptimizer = ({ route, onClose, onOptimized }: RouteOptimizerPr
     }, 800);
   };
 
+  const cancelOptimization = () => {
+    setIsOptimizing(false);
+    setProgress(0);
+    setOptimizationStep(0);
+    toast({
+      title: "Optimization Canceled",
+      description: "Route optimization has been stopped",
+    });
+  };
+
   const completeOptimization = () => {
     const optimized = {
       timeSaved: Math.floor(Math.random() * 45) + 15, // 15-60 minutes
@@ -161,6 +171,12 @@ export const RouteOptimizer = ({ route, onClose, onOptimized }: RouteOptimizerPr
                 <p className="text-center text-sm text-muted-foreground">
                   {progress.toFixed(0)}% Complete
                 </p>
+                <div className="flex justify-center pt-4">
+                  <Button variant="outline" onClick={cancelOptimization} className="gap-2">
+                    <X className="h-4 w-4" />
+                    Cancel Optimization
+                  </Button>
+                </div>
               </div>
             )}
           </div>
